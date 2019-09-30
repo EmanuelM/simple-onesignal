@@ -142,7 +142,7 @@
 			// cURL
 	        $ch = curl_init();
 	        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-	        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json; charset=utf-8", "Authorization: Basic ".$this->app_key]);
+	        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json; charset=utf-8", "Authorization: Basic $this->app_key"]);
 	        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 	        curl_setopt($ch, CURLOPT_HEADER, FALSE);
 	        curl_setopt($ch, CURLOPT_POST, TRUE);
@@ -150,6 +150,7 @@
 	        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
 	        $response = curl_exec($ch);
+	        $response = json_decode($response);
 	        curl_close($ch);
 	        // response
 	        return $response;
