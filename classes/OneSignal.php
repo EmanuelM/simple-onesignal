@@ -1,88 +1,26 @@
 <?php
+	require('OneSignal_Push.php');
+
 	class OneSignal {
 		private $app_id;
 		private $app_key;
 		private $app_language;
-		// push parameters
-		private $push_public;
-		private $push_title;
-		private $push_subtitle;
-		private $push_message;
-		private $push_url;
-		private $push_buttons;
-		private $push_segment;
 
 		/* init OneSignal */
 		public function __construct($app_id, $app_key, $app_language) {
 			$this->app_id       = $app_id;
 			$this->app_key      = $app_key;
 			$this->app_language = $app_language;
-			// init arrays
-			$this->push_public  = [];
-			$this->push_buttons = [];
-			$this->push_segment = [];
 		}
 
-		/**
-		 * Add a user to send
-		 * @param String $player_id - OneSignal player id
-		 */
-		public function addUser($player_id) {
-			array_push($this->push_public, $player_id);
-		}
-
-		/**
-		 * Set push title
-		 * @param String $title
-		 */
-		public function setTitle($title) {
-			$this->push_title = $title;
-		}
-
-		/**
-		 * Set push subtitle. Only web browsers
-		 * @param String $subtitle
-		 */
-		public function setSubtitle($subtitle) {
-			$this->push_subtitle = $subtitle;
-		}
-
-		/**
-		 * Set push message
-		 * @param String $message
-		 */
-		public function setMessage($message) {
-			$this->push_message = $message;
-		}
-
-		/**
-		 * Set callback url
-		 * @param String $url
-		 */
-		public function setUrl($url) {
-			$this->push_url = $url;
-		}
-
-		/**
-		 * Add button
-		 * @param String $id
-		 * @param String $text
-		 */
-		public function addButton($id, $text) {
-			array_push($this->push_buttons, ["id" => $id, "text" => $text]);
-		}
-
-		/**
-		 * Add a segment to send
-		 * @param String $segment
-		 */
-		public function addSegment($segment) {
-			array_push($this->push_segment, $segment);
+		/* new OneSignal Push */
+		public function new() {
+			return new OneSignal_Push;
 		}
 
 		/* make push array */
-		public function makePush() {
-			$push = [];
+		public function makePush($push) {
+			$message = [];
 			// check app id
 			if (empty($this->app_id)) {
 				return [
@@ -91,67 +29,67 @@
 				];
 			}
 			// check public
-			if (empty($this->push_public) && empty($this->push_segment)) {
+			if (empty($push->push_public) && empty($push->push_segment)) {
 				return [
 					"success" => false,
 					"error"   => "No public/segment",
 				];
 			}
 			// check title
-			if (empty($this->push_title)) {
+			if (empty($push->push_title)) {
 				return [
 					"success" => false,
 					"error"   => "Title required",
 				];
 			}
 			// check message content
-			if (empty($this->push_message)) {
+			if (empty($push->push_message)) {
 				return [
 					"success" => false,
 					"error"   => "You need to set a message",
 				];
 			}
-			// general push
-			$push = [
+			/* general push */
+			$message = [
 				"app_id" => $this->app_id,
-				"headings" => [$this->app_language => $this->push_title],
-				"contents" => [$this->app_language => $this->push_message],
+				"headings" => [$this->app_language => $push->push_title],
+				"contents" => [$this->app_language => $push->push_message],
 			];
-			// add extras
+			/* add extras */
 			// -> subtitle
-			if (!empty($this->push_subtitle)) $push['subtitle'] = [$this->app_language => $this->push_subtitle];
+			if (!empty($push->push_subtitle)) $message['subtitle'] = [$this->app_language => $push->push_subtitle];
 			// -> url
-			if (!empty($this->push_url)) $push['url'] = $this->push_url;
+			if (!empty($push->push_url)) $message['url'] = $push->push_url;
 			// -> buttons
-			if (!empty($this->push_buttons)) $push['buttons'] = $this->push_buttons;
+			if (!empty($push->push_buttons)) $message['buttons'] = $push->push_buttons;
 			// -> segment
-			if (!empty($this->push_segment)) $push['included_segments'] = $this->push_segment;
+			if (!empty($push->push_segment)) $message['included_segments'] = $push->push_segment;
 			// -> users
-			if (!empty($this->push_public)) $push['include_player_ids'] = $this->push_public;
+			if (!empty($push->push_public)) $message['include_player_ids'] = $push->push_public;
 
-			return $push;
+			return $message;
 		}
 
 		/* send push notification */
-		public function send() {
-			$push = $this->makePush();
+		public function send($push) {
+			$push = $this->makePush($push);
 			// error making push
 			if (isset($push['success']) && !$push['success']) return $push;
 			// all ok, continue
 			$push = json_encode($push);
 			// cURL
-	        $ch = curl_init();
-	        curl_setopt($ch, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
-	        curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json; charset=utf-8", "Authorization: Basic $this->app_key"]);
-	        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-	        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-	        curl_setopt($ch, CURLOPT_POST, TRUE);
-	        curl_setopt($ch, CURLOPT_POSTFIELDS, $push);
-	        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+	        $client = curl_init();
+	        curl_setopt($client, CURLOPT_URL, "https://onesignal.com/api/v1/notifications");
+	        curl_setopt($client, CURLOPT_HTTPHEADER, ["Content-Type: application/json; charset=utf-8", "Authorization: Basic $this->app_key"]);
+	        curl_setopt($client, CURLOPT_RETURNTRANSFER, TRUE);
+	        curl_setopt($client, CURLOPT_HEADER, FALSE);
+	        curl_setopt($client, CURLOPT_POST, TRUE);
+	        curl_setopt($client, CURLOPT_POSTFIELDS, $push);
+	        curl_setopt($client, CURLOPT_SSL_VERIFYPEER, FALSE);
 
-	        $response = curl_exec($ch);
+	        $response = curl_exec($client);
 	        $response = json_decode($response);
-	        curl_close($ch);
+	        curl_close($client);
 	        // response
 	        return $response;
 		}
