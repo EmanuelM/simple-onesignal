@@ -1,13 +1,13 @@
 <?php
 	class OneSignal_Push {
 		// push parameters
-		private $push_title = "";
-		private $push_subtitle = "";
-		private $push_message = "";
-		private $push_url = "";
-		private $push_public = [];
-		private $push_buttons = [];
-		private $push_segment = [];
+		public $push_title = "";
+		public $push_subtitle = "";
+		public $push_message = "";
+		public $push_url = "";
+		public $push_public = [];
+		public $push_buttons = [];
+		public $push_segment = [];
 
 		/**
 		 * Add a user to send
