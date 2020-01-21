@@ -1,49 +1,70 @@
 <?php
-	require('OneSignal_Push.php');
+	namespace OneSignal;
+	use OneSignal\Notification;
 
-	class OneSignal {
+	class OneSignal
+	{
 		private $app_id;
 		private $app_key;
 		private $app_language;
 
-		/* init OneSignal */
-		public function __construct($app_id, $app_key, $app_language) {
+		/**
+		 * Init OneSignal
+		 * @param string $app_id
+		 * @param string $app_key
+		 * @param string $app_language
+		 */
+		public function __construct(string $app_id = "", string $app_key = "", string $app_language = "en")
+		{
 			$this->app_id       = $app_id;
 			$this->app_key      = $app_key;
 			$this->app_language = $app_language;
 		}
 
-		/* new OneSignal Push */
-		public function new() {
-			return new OneSignal_Push;
+		/**
+		 * New push Notification
+		 * @return Notification
+		 */
+		public function notification()
+		{
+			return new Notification;
 		}
 
-		/* make push array */
-		public function makePush($push) {
+		/**
+		 * Make push array
+		 * @param  Notification $push
+		 * @return array
+		 */
+		private function makeNotification(Notification $push = null)
+		{
 			$message = [];
 			// check app id
-			if (empty($this->app_id)) {
+			if (empty($this->app_id))
+			{
 				return [
 					"success" => false,
 					"error"   => "No app_id",
 				];
 			}
 			// check public
-			if (empty($push->push_public) && empty($push->push_segment)) {
+			if (empty($push->public) && empty($push->segment))
+			{
 				return [
 					"success" => false,
 					"error"   => "No public/segment",
 				];
 			}
 			// check title
-			if (empty($push->push_title)) {
+			if (empty($push->title))
+			{
 				return [
 					"success" => false,
 					"error"   => "Title required",
 				];
 			}
 			// check message content
-			if (empty($push->push_message)) {
+			if (empty($push->message))
+			{
 				return [
 					"success" => false,
 					"error"   => "You need to set a message",
@@ -51,28 +72,33 @@
 			}
 			/* general push */
 			$message = [
-				"app_id" => $this->app_id,
-				"headings" => [$this->app_language => $push->push_title],
-				"contents" => [$this->app_language => $push->push_message],
+				"app_id"   => $this->app_id,
+				"headings" => [$this->app_language => $push->title],
+				"contents" => [$this->app_language => $push->message],
 			];
 			/* add extras */
 			// -> subtitle
-			if (!empty($push->push_subtitle)) $message['subtitle'] = [$this->app_language => $push->push_subtitle];
+			if (!empty($push->subtitle)) $message['subtitle'] = [$this->app_language => $push->subtitle];
 			// -> url
-			if (!empty($push->push_url)) $message['url'] = $push->push_url;
+			if (!empty($push->url)) $message['url'] = $push->url;
 			// -> buttons
-			if (!empty($push->push_buttons)) $message['buttons'] = $push->push_buttons;
+			if (!empty($push->buttons)) $message['buttons'] = $push->buttons;
 			// -> segment
-			if (!empty($push->push_segment)) $message['included_segments'] = $push->push_segment;
+			if (!empty($push->segment)) $message['included_segments'] = $push->segment;
 			// -> users
-			if (!empty($push->push_public)) $message['include_player_ids'] = $push->push_public;
+			if (!empty($push->public)) $message['include_player_ids'] = $push->public;
 
 			return $message;
 		}
 
-		/* send push notification */
-		public function send($push) {
-			$push = $this->makePush($push);
+		/**
+		 * Send push notification
+		 * @param  Notification $push
+		 * @return array
+		 */
+		public function send(Notification $push = null)
+		{
+			$push = $this->makeNotification($push);
 			// error making push
 			if (isset($push['success']) && !$push['success']) return $push;
 			// all ok, continue

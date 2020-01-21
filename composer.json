@@ -1,0 +1,17 @@
+{
+    "name": "emanuelmart/simple-onesignal-php",
+    "description": "A simple tiny PHP wrapper class for OneSignal, with cURL",
+    "authors": [
+    	{
+    		"name": "Emanuel Martinez",
+    		"email": "emanuelmartinezw@hotmail.com"
+    	}
+    ],
+    "license": "MIT",
+	"minimun-stability": "dev",
+   	"autoload": {
+    	"psr-4": {
+    		"OneSignal\\": "src"
+    	}
+    }
+}
